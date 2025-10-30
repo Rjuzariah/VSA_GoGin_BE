@@ -1,0 +1,378 @@
+basePath: /api
+definitions:
+  models.Aircraft:
+    properties:
+      aircraft_type:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      num_rows:
+        type: integer
+      registration_number:
+        type: string
+      seats_per_row:
+        description: Comma-separated seat letters, e.g. "A,C,D,F"
+        type: string
+    type: object
+  models.Flight:
+    properties:
+      aircraft:
+        $ref: '#/definitions/models.Aircraft'
+      aircraft_id:
+        type: integer
+      aircraft_type:
+        type: string
+      created_at:
+        type: string
+      flight_date:
+        type: string
+      flight_number:
+        type: string
+      id:
+        type: integer
+    type: object
+  models.Voucher:
+    properties:
+      created_at:
+        type: string
+      crew_id:
+        type: string
+      crew_name:
+        type: string
+      flight:
+        $ref: '#/definitions/models.Flight'
+      flight_id:
+        type: integer
+      id:
+        type: integer
+      seat1:
+        type: string
+      seat2:
+        type: string
+      seat3:
+        type: string
+    type: object
+host: localhost:8081
+info:
+  contact: {}
+  description: This is a service for managing aircraft, flight, and voucher assignments
+  title: Voucher Seat Assignment API
+  version: "1.0"
+paths:
+  /aircraft:
+    get:
+      description: Get all aircraft
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Aircraft'
+            type: array
+      summary: List all aircraft
+      tags:
+      - aircraft
+    post:
+      consumes:
+      - application/json
+      description: Create a new aircraft with the provided details
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Aircraft'
+      summary: Create a new aircraft
+      tags:
+      - aircraft
+  /aircraft/{id}:
+    delete:
+      description: Delete aircraft by ID
+      parameters:
+      - description: Aircraft ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+      summary: Delete an aircraft
+      tags:
+      - aircraft
+    get:
+      description: Get aircraft details by ID
+      parameters:
+      - description: Aircraft ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Aircraft'
+      summary: Get an aircraft by ID
+      tags:
+      - aircraft
+    put:
+      consumes:
+      - application/json
+      description: Update aircraft details by ID
+      parameters:
+      - description: Aircraft ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Aircraft'
+      summary: Update an aircraft
+      tags:
+      - aircraft
+  /flights:
+    get:
+      description: Get all flights
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Flight'
+            type: array
+      summary: List all flights
+      tags:
+      - flights
+    post:
+      consumes:
+      - application/json
+      description: Create a new flight with the provided details
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Flight'
+      summary: Create a new flight
+      tags:
+      - flights
+  /flights/{id}:
+    delete:
+      description: Delete flight by ID
+      parameters:
+      - description: Flight ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+      summary: Delete a flight
+      tags:
+      - flights
+    get:
+      description: Get flight details by ID
+      parameters:
+      - description: Flight ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Flight'
+      summary: Get a flight by ID
+      tags:
+      - flights
+    put:
+      consumes:
+      - application/json
+      description: Update flight details by ID
+      parameters:
+      - description: Flight ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Flight'
+      summary: Update a flight
+      tags:
+      - flights
+  /vouchers:
+    get:
+      description: Get a list of all vouchers with their associated flight information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved vouchers list
+          schema:
+            items:
+              $ref: '#/definitions/models.Voucher'
+            type: array
+        "500":
+          description: Server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List all vouchers
+      tags:
+      - vouchers
+    post:
+      consumes:
+      - application/json
+      description: Create a new voucher with crew information and seat assignments
+      parameters:
+      - description: Voucher information
+        in: body
+        name: voucher
+        required: true
+        schema:
+          $ref: '#/definitions/models.Voucher'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully created voucher
+          schema:
+            $ref: '#/definitions/models.Voucher'
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new voucher
+      tags:
+      - vouchers
+  /vouchers/{id}:
+    delete:
+      description: Delete a voucher and its associated data
+      parameters:
+      - description: Voucher ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Successfully deleted
+        "500":
+          description: Server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a voucher
+      tags:
+      - vouchers
+    get:
+      description: Get detailed voucher information including crew details and seat
+        assignments
+      parameters:
+      - description: Voucher ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved voucher
+          schema:
+            $ref: '#/definitions/models.Voucher'
+        "404":
+          description: Voucher not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a voucher by ID
+      tags:
+      - vouchers
+    put:
+      consumes:
+      - application/json
+      description: Update voucher details including crew information and seat assignments
+      parameters:
+      - description: Voucher ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated voucher information
+        in: body
+        name: voucher
+        required: true
+        schema:
+          $ref: '#/definitions/models.Voucher'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated voucher
+          schema:
+            $ref: '#/definitions/models.Voucher'
+        "400":
+          description: Invalid input
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Voucher not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a voucher
+      tags:
+      - vouchers
+swagger: "2.0"

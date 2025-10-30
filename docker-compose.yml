@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8081:8081"
+    volumes:
+      - sqlite_data:/app/data
+    environment:
+      - GIN_MODE=release
+
+volumes:
+  sqlite_data:

@@ -1,0 +1,17 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# SQLite database file
+*.db
+
+# Go binary
+main
+
+# IDE specific files
+.idea
+.vscode
