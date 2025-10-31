@@ -505,9 +505,6 @@ const docTemplate = `{
                 "num_rows": {
                     "type": "integer"
                 },
-                "registration_number": {
-                    "type": "string"
-                },
                 "seats_per_row": {
                     "description": "Comma-separated seat letters, e.g. \"A,C,D,F\"",
                     "type": "string"
