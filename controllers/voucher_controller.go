@@ -3,9 +3,10 @@ package controllers
 import (
 	"net/http"
 
+	"VSA_GOGIN_BE/models"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"VSA_GOGIN_BE/models"
 )
 
 type VoucherController struct {
@@ -72,7 +73,7 @@ func (c *VoucherController) GetVoucher(ctx *gin.Context) {
 // @Router /vouchers [get]
 func (c *VoucherController) ListVouchers(ctx *gin.Context) {
 	var vouchers []models.Voucher
-	if err := c.DB.Find(&vouchers).Error; err != nil {
+	if err := c.DB.Preload("Flight").Preload("Flight.Aircraft").Find(&vouchers).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
