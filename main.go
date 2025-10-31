@@ -6,25 +6,34 @@
 package main
 
 import (
-	"log"
-	"github.com/gin-gonic/gin"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-	"github.com/gin-contrib/cors"
+	"VSA_GOGIN_BE/config"
 	"VSA_GOGIN_BE/controllers"
 	"VSA_GOGIN_BE/models"
 	"VSA_GOGIN_BE/routes"
+	"fmt"
+	"log"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 
 	// Swagger
 	_ "VSA_GOGIN_BE/docs"
-	"github.com/swaggo/gin-swagger"
-	"github.com/swaggo/files"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
 	// Create a Gin router with default middleware
 	router := gin.Default()
+
+	redisClient := config.InitRedis()
+	fmt.Println("✅ Connected to Redis")
+
+	// Example: store a key
+	redisClient.Set(config.Ctx, "test", "hello", 0)
 
 	// Enable CORS for frontend development
 	router.Use(cors.New(cors.Config{
@@ -68,8 +77,8 @@ func main() {
 	})
 
 	// Start the server
-    log.Println("Server starting on :8081")
-    if err := router.Run(":8081"); err != nil {
-        log.Fatal("Failed to start server:", err)
-    }
+	log.Println("Server starting on :8081")
+	if err := router.Run(":8081"); err != nil {
+		log.Fatal("Failed to start server:", err)
+	}
 }
