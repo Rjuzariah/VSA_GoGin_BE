@@ -10,9 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"github.com/gin-contrib/cors"
 	"VSA_GOGIN_BE/controllers"
 	"VSA_GOGIN_BE/models"
 	"VSA_GOGIN_BE/routes"
+
 
 	// Swagger
 	_ "VSA_GOGIN_BE/docs"
@@ -23,6 +25,15 @@ import (
 func main() {
 	// Create a Gin router with default middleware
 	router := gin.Default()
+
+	// Enable CORS for frontend development
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	// Database connection using SQLite
 	db, err := gorm.Open(sqlite.Open("vsa.db"), &gorm.Config{})
