@@ -1,18 +1,17 @@
 package routes
 
 import (
-	"github.com/gin-gonic/gin"
 	"VSA_GOGIN_BE/controllers"
+
+	"github.com/gin-gonic/gin"
 )
 
 func SetupVoucherRoutes(router *gin.Engine, controller *controllers.VoucherController) {
 	vouchers := router.Group("/api/vouchers")
 	{
-		vouchers.POST("/", controller.CreateVoucher)
 		vouchers.GET("/", controller.ListVouchers)
-		vouchers.GET("/:id", controller.GetVoucher)
-		vouchers.PUT("/:id", controller.UpdateVoucher)
-		vouchers.DELETE("/:id", controller.DeleteVoucher)
+		vouchers.POST("/generate", controller.GenerateVoucherSeat)
+		vouchers.POST("/check", controller.CheckVoucherSeat)
 	}
 }
 

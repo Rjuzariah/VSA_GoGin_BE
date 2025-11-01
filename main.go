@@ -59,7 +59,7 @@ func main() {
 	// Initialize controllers
 	aircraftController := controllers.NewAircraftController(db)
 	flightController := controllers.NewFlightController(db)
-	voucherController := controllers.NewVoucherController(db)
+	voucherController := controllers.NewVoucherController(db, redisClient)
 
 	// Setup routes
 	routes.SetupAircraftRoutes(router, aircraftController)
