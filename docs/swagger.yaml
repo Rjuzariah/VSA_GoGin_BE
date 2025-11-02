@@ -4,8 +4,6 @@ definitions:
     properties:
       aircraft_type:
         type: string
-      created_at:
-        type: string
       id:
         type: integer
       num_rows:
@@ -20,10 +18,6 @@ definitions:
         $ref: '#/definitions/models.Aircraft'
       aircraft_id:
         type: integer
-      aircraft_type:
-        type: string
-      created_at:
-        type: string
       flight_date:
         type: string
       flight_number:
@@ -39,10 +33,10 @@ definitions:
         type: string
       crew_name:
         type: string
-      flight:
-        $ref: '#/definitions/models.Flight'
-      flight_id:
-        type: integer
+      flight_date:
+        type: string
+      flight_number:
+        type: string
       id:
         type: integer
       seat1:
@@ -244,133 +238,74 @@ paths:
       summary: List all vouchers
       tags:
       - vouchers
+  /vouchers/check:
     post:
-      consumes:
-      - application/json
-      description: Create a new voucher with crew information and seat assignments
+      description: Generate voucher seat for crew members based on the flight ID and
+        flight date and return exist true/false
       parameters:
-      - description: Voucher information
+      - description: Voucher generate request
         in: body
-        name: voucher
+        name: request
         required: true
         schema:
-          $ref: '#/definitions/models.Voucher'
+          additionalProperties: true
+          type: object
       produces:
       - application/json
       responses:
         "201":
-          description: Successfully created voucher
+          description: List voucher seat
           schema:
-            $ref: '#/definitions/models.Voucher'
+            additionalProperties: true
+            type: object
         "400":
-          description: Invalid input
+          description: Bad Request
           schema:
             additionalProperties:
               type: string
             type: object
         "500":
-          description: Server error
+          description: Server Error
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: Create a new voucher
+      summary: Check voucher seat
       tags:
       - vouchers
-  /vouchers/{id}:
-    delete:
-      description: Delete a voucher and its associated data
+  /vouchers/generate:
+    post:
+      description: Generate voucher seat for crew members based on the flight ID and
+        flight date
       parameters:
-      - description: Voucher ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      responses:
-        "204":
-          description: Successfully deleted
-        "500":
-          description: Server error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete a voucher
-      tags:
-      - vouchers
-    get:
-      description: Get detailed voucher information including crew details and seat
-        assignments
-      parameters:
-      - description: Voucher ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully retrieved voucher
-          schema:
-            $ref: '#/definitions/models.Voucher'
-        "404":
-          description: Voucher not found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Server error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get a voucher by ID
-      tags:
-      - vouchers
-    put:
-      consumes:
-      - application/json
-      description: Update voucher details including crew information and seat assignments
-      parameters:
-      - description: Voucher ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Updated voucher information
+      - description: Voucher generate request
         in: body
-        name: voucher
+        name: request
         required: true
         schema:
-          $ref: '#/definitions/models.Voucher'
+          additionalProperties: true
+          type: object
       produces:
       - application/json
       responses:
-        "200":
-          description: Successfully updated voucher
+        "201":
+          description: 'Example: {\"success\": true, \"seats\": [\"3B\", \"7C\", \"14D\"]}'
           schema:
-            $ref: '#/definitions/models.Voucher'
-        "400":
-          description: Invalid input
-          schema:
-            additionalProperties:
-              type: string
+            additionalProperties: true
             type: object
-        "404":
-          description: Voucher not found
+        "400":
+          description: Bad Request
           schema:
             additionalProperties:
               type: string
             type: object
         "500":
-          description: Server error
+          description: Server Error
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: Update a voucher
+      summary: Generate voucher seats
       tags:
       - vouchers
 swagger: "2.0"

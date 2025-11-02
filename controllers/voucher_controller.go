@@ -1,15 +1,9 @@
 package controllers
 
 import (
-	"context"
-	"encoding/json"
-	"math/rand"
-	"net/http"
-	"time"
-
 	"VSA_GOGIN_BE/models"
-
-	"fmt"
+	"VSA_GOGIN_BE/services"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -17,14 +11,21 @@ import (
 )
 
 type VoucherController struct {
-	DB  *gorm.DB
-	RDB *redis.Client // Add Redis client
+	DB      *gorm.DB
+	RDB     *redis.Client // Add Redis client
+	Service *services.VoucherService
 }
 
 func NewVoucherController(db *gorm.DB, rdb *redis.Client) *VoucherController {
-	return &VoucherController{
+	service := &services.VoucherService{
 		DB:  db,
 		RDB: rdb,
+	}
+
+	return &VoucherController{
+		DB:      db,
+		RDB:     rdb,
+		Service: service,
 	}
 }
 
@@ -46,151 +47,56 @@ func (c *VoucherController) ListVouchers(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, vouchers)
 }
 
-func (c *VoucherController) CheckVoucherSeat(ctx *gin.Context) {
-	var voucher models.Voucher
-
-	if err := ctx.ShouldBindJSON(&voucher); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Check if voucher has already been generated
-	var vouchers []models.Voucher
-	if err := c.DB.Where("flight_number = ?", voucher.FlightNumber).Where("flight_date = ?", voucher.FlightDate).Where("crew_id = ?", voucher.CrewID).Find(&vouchers).Error; err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "Flight not found"})
-		return
-	}
-
-	if len(vouchers) > 0 {
-		ctx.JSON(http.StatusOK, gin.H{"exists": true})
-	} else {
-		ctx.JSON(http.StatusOK, gin.H{"exists": false})
-	}
-
-}
-
-// @Summary Generate a random voucher seat
-// @Description Generate a random seat for a voucher based on the flight ID
+// Check voucher godoc
+// @Summary Check voucher seat
+// @Description Generate voucher seat for crew members based on the flight ID and flight date and return exist true/false
 // @Tags vouchers
 // @Produce json
-// @Param flight_id path string true "Flight ID"
-// @Success 200 {object} string "Random seat"
-// @Failure 400 {object} map[string]string "Invalid input"
-// @Failure 500 {object} map[string]string "Server error"
-// @Router /vouchers/generate [post]
-func (c *VoucherController) GenerateVoucherSeat(ctx *gin.Context) {
+// @Param request body map[string]interface{} true "Voucher generate request"
+// @Success 200 {object} map[string]interface{} "List voucher seat"
+// @Failure 400 {object} map[string]string "Bad Request"
+// @Failure 500 {object} map[string]string "Server Error"
+// @Router /vouchers/check [post]
+func (c *VoucherController) CheckVoucherSeat(ctx *gin.Context) {
 	var voucher models.Voucher
-
 	if err := ctx.ShouldBindJSON(&voucher); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Check if voucher has already been generated
-	var vouchers []models.Voucher
-	if err := c.DB.Where("flight_number = ?", voucher.FlightNumber).Where("flight_date = ?", voucher.FlightDate).Where("crew_id = ?", voucher.CrewID).Find(&vouchers).Error; err != nil {
-		return
-	}
-	if len(vouchers) > 0 {
-		ctx.JSON(http.StatusConflict, gin.H{"message": "Voucher already generated for this crew member on this flight and date"})
-		return
-	}
-
-	cacheKey := "voucher_seat_cache:" + voucher.FlightNumber + ":" + voucher.FlightDate.String()
-
-	// 1️⃣ Try to get cache from Redis
-	var allSeats []string
-	cacheSeat, err := c.RDB.Get(context.Background(), cacheKey).Result()
-	json.Unmarshal([]byte(cacheSeat), &allSeats)
-
+	exists, err := c.Service.CheckVoucherExists(&voucher)
 	if err != nil {
-		fmt.Println("Cache not found")
-	}
-
-	fmt.Print("Hello, world")
-
-	if allSeats == nil {
-		//GENERATE all seats
-		fmt.Println("Generating all available seats for flight:", voucher.FlightNumber)
-		//get row and seat info from aircraft associated with flightID
-		var flight models.Flight
-		if err := c.DB.Preload("Aircraft").First(&flight, "flight_number = ?", voucher.FlightNumber).Error; err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "Flight not found"})
-			return
-		}
-
-		//get seat1,seat2,seat3 from vouchers associated with flightID to skip
-		var vouchers []models.Voucher
-		if err := c.DB.Where("flight_number = ?", voucher.FlightNumber).Where("flight_date = ?", voucher.FlightDate).Find(&vouchers).Error; err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		//map voucher seats to skip list
-		skipList := map[string]bool{}
-		for _, voucher := range vouchers {
-			if voucher.Seat1 != "" {
-				skipList[voucher.Seat1] = true
-			}
-			if voucher.Seat2 != "" {
-				skipList[voucher.Seat2] = true
-			}
-			if voucher.Seat3 != "" {
-				skipList[voucher.Seat3] = true
-			}
-		}
-
-		rows := flight.Aircraft.NumRows
-		sections := flight.Aircraft.SeatsPerRow // e.g. "ABCDEF"
-		fmt.Println("Rows:", rows)
-		fmt.Println("Sections:", sections)
-		//generate all seats excluding skipList
-		for i := 1; i <= rows; i++ {
-			for _, section := range sections {
-				seat := fmt.Sprintf("%d%c", i, section)
-				if !skipList[seat] {
-					allSeats = append(allSeats, seat)
-				}
-			}
-		}
-		//end generate all seats
-
-		//store allSeat to Redis cache
-		seatsJSON, _ := json.Marshal(allSeats)
-		c.RDB.Set(context.Background(), cacheKey, seatsJSON, time.Hour*1)
-	}
-
-	// Pick a random available seat
-	// shuffle allSeats
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	r.Shuffle(len(allSeats), func(i, j int) {
-		allSeats[i], allSeats[j] = allSeats[j], allSeats[i]
-	})
-
-	// get first 3 random seats (ensure there are at least 3 available)
-	numSeats := 3
-	if len(allSeats) < numSeats {
-		numSeats = len(allSeats)
-	}
-	randomSeats := allSeats[:numSeats]
-
-	// create voucherseat data
-	// TO DO: Save the assigned random seats to voucher and update Redis cache accordingly
-	// Assign selected seats to voucher
-	voucher.Seat1 = randomSeats[0]
-	voucher.Seat2 = randomSeats[1]
-	voucher.Seat3 = randomSeats[2]
-	if err := c.DB.Save(&voucher).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	if len(randomSeats) == 0 {
-		ctx.JSON(http.StatusNotFound, gin.H{"message": "No seats found for this flight"})
+	ctx.JSON(http.StatusOK, gin.H{"exists": exists})
+}
+
+// @Summary Generate voucher seats
+// @Description Generate voucher seat for crew members based on the flight ID and flight date
+// @Tags vouchers
+// @Produce json
+// @Param request body map[string]interface{} true "Voucher generate request"
+// @Success 201 {object} map[string]interface{} "Example: {\"success\": true, \"seats\": [\"3B\", \"7C\", \"14D\"]}"
+// @Failure 400 {object} map[string]string "Bad Request"
+// @Failure 500 {object} map[string]string "Server Error"
+// @Router /vouchers/generate [post]
+func (c *VoucherController) GenerateVoucherSeat(ctx *gin.Context) {
+	var voucher models.Voucher
+	if err := ctx.ShouldBindJSON(&voucher); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	seats, err := c.Service.GenerateVoucherSeats(&voucher)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"success":     true,
-		"random_seat": randomSeats,
+		"success": true,
+		"seats":   seats,
 	})
 }

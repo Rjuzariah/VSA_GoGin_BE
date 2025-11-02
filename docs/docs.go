@@ -293,39 +293,40 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/vouchers/check": {
             "post": {
-                "description": "Create a new voucher with crew information and seat assignments",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Generate voucher seat for crew members based on the flight ID and flight date and return exist true/false",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "vouchers"
                 ],
-                "summary": "Create a new voucher",
+                "summary": "Check voucher seat",
                 "parameters": [
                     {
-                        "description": "Voucher information",
-                        "name": "voucher",
+                        "description": "Voucher generate request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Voucher"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Successfully created voucher",
+                        "description": "List voucher seat",
                         "schema": {
-                            "$ref": "#/definitions/models.Voucher"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "Invalid input",
+                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -334,7 +335,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Server error",
+                        "description": "Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -345,100 +346,38 @@ const docTemplate = `{
                 }
             }
         },
-        "/vouchers/{id}": {
-            "get": {
-                "description": "Get detailed voucher information including crew details and seat assignments",
+        "/vouchers/generate": {
+            "post": {
+                "description": "Generate voucher seat for crew members based on the flight ID and flight date",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "vouchers"
                 ],
-                "summary": "Get a voucher by ID",
+                "summary": "Generate voucher seats",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Voucher ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully retrieved voucher",
-                        "schema": {
-                            "$ref": "#/definitions/models.Voucher"
-                        }
-                    },
-                    "404": {
-                        "description": "Voucher not found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update voucher details including crew information and seat assignments",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vouchers"
-                ],
-                "summary": "Update a voucher",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Voucher ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Updated voucher information",
-                        "name": "voucher",
+                        "description": "Voucher generate request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Voucher"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "Successfully updated voucher",
+                    "201": {
+                        "description": "Example: {\\\"success\\\": true, \\\"seats\\\": [\\\"3B\\\", \\\"7C\\\", \\\"14D\\\"]}",
                         "schema": {
-                            "$ref": "#/definitions/models.Voucher"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "Invalid input",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Voucher not found",
+                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -447,37 +386,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a voucher and its associated data",
-                "tags": [
-                    "vouchers"
-                ],
-                "summary": "Delete a voucher",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Voucher ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Successfully deleted"
-                    },
-                    "500": {
-                        "description": "Server error",
+                        "description": "Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -494,9 +403,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "aircraft_type": {
-                    "type": "string"
-                },
-                "created_at": {
                     "type": "string"
                 },
                 "id": {
@@ -519,12 +425,6 @@ const docTemplate = `{
                 },
                 "aircraft_id": {
                     "type": "integer"
-                },
-                "aircraft_type": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
                 },
                 "flight_date": {
                     "type": "string"
@@ -549,11 +449,11 @@ const docTemplate = `{
                 "crew_name": {
                     "type": "string"
                 },
-                "flight": {
-                    "$ref": "#/definitions/models.Flight"
+                "flight_date": {
+                    "type": "string"
                 },
-                "flight_id": {
-                    "type": "integer"
+                "flight_number": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"

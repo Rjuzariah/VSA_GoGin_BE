@@ -10,6 +10,7 @@ import (
 	"VSA_GOGIN_BE/controllers"
 	"VSA_GOGIN_BE/models"
 	"VSA_GOGIN_BE/routes"
+	"VSA_GOGIN_BE/seed"
 	"fmt"
 	"log"
 
@@ -55,6 +56,10 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)
 	}
+
+	// Seed default data
+	seed.SeedAircrafts(db)
+	seed.SeedFlights(db)
 
 	// Initialize controllers
 	aircraftController := controllers.NewAircraftController(db)

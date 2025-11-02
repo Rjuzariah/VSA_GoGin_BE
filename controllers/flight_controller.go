@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+
+	"VSA_GOGIN_BE/models"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"VSA_GOGIN_BE/models"
 )
 
 type FlightController struct {
@@ -38,6 +40,24 @@ func (c *FlightController) CreateFlight(ctx *gin.Context) {
 		return
 	}
 
+	// ✅ Check if a flight with the same number and date already exists
+	var existingFlight models.Flight
+	err := c.DB.Where("flight_number = ? AND DATE(flight_date) = DATE(?)", flight.FlightNumber, flight.FlightDate).
+		First(&existingFlight).Error
+
+	if err == nil {
+		// Found a duplicate flight
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("Flight %s already exists on %s", flight.FlightNumber, flight.FlightDate.Format("2006-01-02")),
+		})
+		return
+	} else if err != gorm.ErrRecordNotFound {
+		// Some unexpected DB error
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// ✅ If no duplicate, proceed to create
 	if err := c.DB.Create(&flight).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -92,11 +112,15 @@ func (c *FlightController) ListFlights(ctx *gin.Context) {
 // @Router /flights/{id} [put]
 func (c *FlightController) UpdateFlight(ctx *gin.Context) {
 	var flight models.Flight
-	if err := c.DB.First(&flight, ctx.Param("id")).Error; err != nil {
+	id := ctx.Param("id")
+
+	// Find the existing flight
+	if err := c.DB.First(&flight, id).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Flight not found"})
 		return
 	}
 
+	// Bind the request body to the same variable (so it updates fields)
 	if err := ctx.ShouldBindJSON(&flight); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -109,6 +133,23 @@ func (c *FlightController) UpdateFlight(ctx *gin.Context) {
 		return
 	}
 
+	// ✅ Check for duplicate flight (same number + same date) excluding current ID
+	var existing models.Flight
+	err := c.DB.Where("flight_number = ? AND DATE(flight_date) = DATE(?) AND id <> ?", flight.FlightNumber, flight.FlightDate, flight.ID).
+		First(&existing).Error
+
+	if err == nil {
+		// Found another record with same number and date
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("Flight %s already exists on %s", flight.FlightNumber, flight.FlightDate.Format("2006-01-02")),
+		})
+		return
+	} else if err != gorm.ErrRecordNotFound {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// ✅ Proceed with update
 	if err := c.DB.Save(&flight).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
