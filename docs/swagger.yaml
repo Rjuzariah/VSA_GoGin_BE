@@ -4,6 +4,8 @@ definitions:
     properties:
       aircraft_type:
         type: string
+      aircraft_type_key:
+        type: string
       id:
         type: integer
       num_rows:
@@ -12,21 +14,12 @@ definitions:
         description: Comma-separated seat letters, e.g. "A,C,D,F"
         type: string
     type: object
-  models.Flight:
-    properties:
-      aircraft:
-        $ref: '#/definitions/models.Aircraft'
-      aircraft_id:
-        type: integer
-      flight_date:
-        type: string
-      flight_number:
-        type: string
-      id:
-        type: integer
-    type: object
   models.Voucher:
     properties:
+      aircraft_type:
+        type: string
+      aircraft_type_key:
+        type: string
       created_at:
         type: string
       crew_id:
@@ -135,88 +128,6 @@ paths:
       summary: Update an aircraft
       tags:
       - aircraft
-  /flights:
-    get:
-      description: Get all flights
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.Flight'
-            type: array
-      summary: List all flights
-      tags:
-      - flights
-    post:
-      consumes:
-      - application/json
-      description: Create a new flight with the provided details
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/models.Flight'
-      summary: Create a new flight
-      tags:
-      - flights
-  /flights/{id}:
-    delete:
-      description: Delete flight by ID
-      parameters:
-      - description: Flight ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      responses:
-        "204":
-          description: No Content
-      summary: Delete a flight
-      tags:
-      - flights
-    get:
-      description: Get flight details by ID
-      parameters:
-      - description: Flight ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.Flight'
-      summary: Get a flight by ID
-      tags:
-      - flights
-    put:
-      consumes:
-      - application/json
-      description: Update flight details by ID
-      parameters:
-      - description: Flight ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.Flight'
-      summary: Update a flight
-      tags:
-      - flights
   /vouchers:
     get:
       description: Get a list of all vouchers with their associated flight information
@@ -253,7 +164,7 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
+        "200":
           description: List voucher seat
           schema:
             additionalProperties: true

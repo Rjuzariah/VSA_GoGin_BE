@@ -25,14 +25,3 @@ func SetupAircraftRoutes(router *gin.Engine, controller *controllers.AircraftCon
 		aircraft.DELETE("/:id", controller.DeleteAircraft)
 	}
 }
-
-func SetupFlightRoutes(router *gin.Engine, controller *controllers.FlightController) {
-	flights := router.Group("/api/flights")
-	{
-		flights.POST("/", controller.CreateFlight)
-		flights.GET("/", controller.ListFlights)
-		flights.GET("/:id", controller.GetFlight)
-		flights.PUT("/:id", controller.UpdateFlight)
-		flights.DELETE("/:id", controller.DeleteFlight)
-	}
-}

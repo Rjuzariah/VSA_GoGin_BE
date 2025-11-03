@@ -1,0 +1,40 @@
+# VSA_GOGIN_BE
+
+This project is a backend application for the VSA_GOGIN_BE system. It serves as the backend API for managing various functionalities related to the VSA_GOGIN_BE system.
+
+Key Features:
+
+- API Documentation: The project utilizes Swagger for comprehensive API documentation, allowing developers and users to easily understand and interact with the available endpoints.
+
+- Redis Cache: The application leverages Redis to efficiently cache available seat information by flight number, flight date, and aircraft type. This cache helps improve performance and reduce the load on the backend.
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+
+## Installation
+
+1. Clone the repository:
+
+   ```shell
+   git clone https://github.com/Rjuzariah/VSA_GoGin_BE.git
+   ```
+
+2. Install Project Depedendies:
+    ```shell
+    cd VSA_GOGIN_BE
+    go mod download
+    ```
+
+4. Run & Build Docker Container:
+    ```shell
+    docker-compose up --build
+    ```
+
+5. Access the application:
+    Open your web browser and navigate to http://localhost:8081/swagger/index.html
+
+## Usage
+Once the Docker container is running, you can interact with the application using the provided API endpoints.
+You can use tools like Swagger, Postman and or cURL to test the API endpoints.

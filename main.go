@@ -1,6 +1,6 @@
 // @title Voucher Seat Assignment API
 // @version 1.0
-// @description This is a service for managing aircraft, flight, and voucher assignments
+// @description This is a service for managing aircraft, and voucher assignments
 // @host localhost:8081
 // @BasePath /api
 package main
@@ -52,23 +52,20 @@ func main() {
 	}
 
 	// Auto migrate the schema
-	err = db.AutoMigrate(&models.Aircraft{}, &models.Flight{}, &models.Voucher{})
+	err = db.AutoMigrate(&models.Aircraft{}, &models.Voucher{})
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)
 	}
 
 	// Seed default data
 	seed.SeedAircrafts(db)
-	seed.SeedFlights(db)
 
 	// Initialize controllers
 	aircraftController := controllers.NewAircraftController(db)
-	flightController := controllers.NewFlightController(db)
 	voucherController := controllers.NewVoucherController(db, redisClient)
 
 	// Setup routes
 	routes.SetupAircraftRoutes(router, aircraftController)
-	routes.SetupFlightRoutes(router, flightController)
 	routes.SetupVoucherRoutes(router, voucherController)
 
 	// Swagger UI endpoint

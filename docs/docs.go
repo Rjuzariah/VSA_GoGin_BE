@@ -139,130 +139,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/flights": {
-            "get": {
-                "description": "Get all flights",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "flights"
-                ],
-                "summary": "List all flights",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Flight"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new flight with the provided details",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "flights"
-                ],
-                "summary": "Create a new flight",
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/models.Flight"
-                        }
-                    }
-                }
-            }
-        },
-        "/flights/{id}": {
-            "get": {
-                "description": "Get flight details by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "flights"
-                ],
-                "summary": "Get a flight by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Flight ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.Flight"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update flight details by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "flights"
-                ],
-                "summary": "Update a flight",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Flight ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.Flight"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete flight by ID",
-                "tags": [
-                    "flights"
-                ],
-                "summary": "Delete a flight",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Flight ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                }
-            }
-        },
         "/vouchers": {
             "get": {
                 "description": "Get a list of all vouchers with their associated flight information",
@@ -318,7 +194,7 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "List voucher seat",
                         "schema": {
                             "type": "object",
@@ -405,6 +281,9 @@ const docTemplate = `{
                 "aircraft_type": {
                     "type": "string"
                 },
+                "aircraft_type_key": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -417,29 +296,15 @@ const docTemplate = `{
                 }
             }
         },
-        "models.Flight": {
-            "type": "object",
-            "properties": {
-                "aircraft": {
-                    "$ref": "#/definitions/models.Aircraft"
-                },
-                "aircraft_id": {
-                    "type": "integer"
-                },
-                "flight_date": {
-                    "type": "string"
-                },
-                "flight_number": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                }
-            }
-        },
         "models.Voucher": {
             "type": "object",
             "properties": {
+                "aircraft_type": {
+                    "type": "string"
+                },
+                "aircraft_type_key": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },

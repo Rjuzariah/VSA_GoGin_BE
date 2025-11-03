@@ -26,6 +26,7 @@ func (s *VoucherService) CheckVoucherExists(voucher *models.Voucher) (bool, erro
 		Where("flight_number = ?", voucher.FlightNumber).
 		Where("flight_date = ?", voucher.FlightDate).
 		Where("crew_id = ?", voucher.CrewID).
+		Where("aircraft_type_key = ?", voucher.AircraftTypeKey).
 		Find(&vouchers).Error; err != nil {
 		return false, errors.New("database error while checking voucher")
 	}
@@ -41,11 +42,11 @@ func (s *VoucherService) GenerateVoucherSeats(voucher *models.Voucher) ([]string
 		return nil, err
 	}
 	if exists {
-		return nil, errors.New("voucher already generated for this crew member on this flight and date")
+		return nil, fmt.Errorf("Voucher already generated for crew id: %s on this flight and date", voucher.CrewID)
 	}
 
 	// 2️⃣ Try cache
-	cacheKey := "voucher_seat_cache:" + voucher.FlightNumber + ":" + voucher.FlightDate.String()
+	cacheKey := "voucher_seat_cache:" + voucher.FlightNumber + ":" + voucher.FlightDate.String() + ":" + voucher.AircraftType
 	var allSeats []string
 
 	cacheSeat, err := s.RDB.Get(context.Background(), cacheKey).Result()
@@ -53,14 +54,15 @@ func (s *VoucherService) GenerateVoucherSeats(voucher *models.Voucher) ([]string
 		json.Unmarshal([]byte(cacheSeat), &allSeats)
 	}
 
+	var aircraft models.Aircraft
+	if err := s.DB.
+		Where("aircraft_type_key = ?", voucher.AircraftTypeKey).
+		First(&aircraft).Error; err != nil {
+		return nil, errors.New("aircraft not found")
+	}
+
 	// 3️⃣ Generate if cache empty
 	if len(allSeats) == 0 {
-		var flight models.Flight
-		if err := s.DB.Preload("Aircraft").
-			First(&flight, "flight_number = ?", voucher.FlightNumber).Error; err != nil {
-			return nil, errors.New("flight not found")
-		}
-
 		var vouchers []models.Voucher
 		if err := s.DB.
 			Where("flight_number = ?", voucher.FlightNumber).
@@ -78,8 +80,8 @@ func (s *VoucherService) GenerateVoucherSeats(voucher *models.Voucher) ([]string
 			}
 		}
 
-		rows := flight.Aircraft.NumRows
-		sections := flight.Aircraft.SeatsPerRow
+		rows := aircraft.NumRows
+		sections := aircraft.SeatsPerRow
 		for i := 1; i <= rows; i++ {
 			for _, section := range sections {
 				seat := fmt.Sprintf("%d%c", i, section)
@@ -108,6 +110,7 @@ func (s *VoucherService) GenerateVoucherSeats(voucher *models.Voucher) ([]string
 	}
 
 	selected := allSeats[:numSeats]
+	voucher.AircraftType = aircraft.AircraftType
 	voucher.Seat1 = selected[0]
 	if len(selected) > 1 {
 		voucher.Seat2 = selected[1]
