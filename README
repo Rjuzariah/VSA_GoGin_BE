@@ -23,7 +23,7 @@ Key Features:
 
 2. Install Project Depedendies:
     ```shell
-    cd VSA_GOGIN_BE
+    cd backend/VSA_GOGIN_BE
     go mod download
     ```
 
