@@ -59,6 +59,7 @@ func main() {
 
 	// Seed default data
 	seed.SeedAircrafts(db)
+	seed.SeedVouchers(db)
 
 	// Initialize controllers
 	aircraftController := controllers.NewAircraftController(db)

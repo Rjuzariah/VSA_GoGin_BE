@@ -11,9 +11,9 @@ import (
 func SeedAircrafts(db *gorm.DB) {
 	// Define the default aircrafts
 	defaultAircrafts := []models.Aircraft{
-		{AircraftType: "ATR 72", NumRows: 18, SeatsPerRow: "ABCDF"},
-		{AircraftType: "Airbus A320", NumRows: 32, SeatsPerRow: "ABCDEF"},
-		{AircraftType: "Boeing 737", NumRows: 32, SeatsPerRow: "ABCDEF"},
+		{AircraftTypeKey: "atr_72", AircraftType: "ATR 72", NumRows: 18, SeatsPerRow: "ABCDF"},
+		{AircraftTypeKey: "airbus_a320", AircraftType: "Airbus A320", NumRows: 32, SeatsPerRow: "ABCDEF"},
+		{AircraftTypeKey: "boeing_737", AircraftType: "Boeing 737", NumRows: 32, SeatsPerRow: "ABCDEF"},
 	}
 
 	for _, aircraft := range defaultAircrafts {
